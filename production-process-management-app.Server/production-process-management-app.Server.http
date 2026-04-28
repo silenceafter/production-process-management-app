@@ -1,0 +1,6 @@
+@production_process_management_app.Server_HostAddress = http://localhost:5036
+
+GET {{production_process_management_app.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

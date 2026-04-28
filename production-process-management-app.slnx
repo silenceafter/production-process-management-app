@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="production-process-management-app.client/production-process-management-app.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="production-process-management-app.Server/production-process-management-app.Server.csproj" />
+</Solution>
