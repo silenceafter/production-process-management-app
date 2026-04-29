@@ -1,7 +1,7 @@
 <Solution>
-  <Project Path="production-process-management-app.client/production-process-management-app.client.esproj">
-    <Build />
-    <Deploy />
+  <Project Path="ppm-frontend/ppm-frontend.esproj">
+    <Build Solution="Release|*" />
+    <Deploy Solution="Release|*" />
   </Project>
-  <Project Path="production-process-management-app.Server/production-process-management-app.Server.csproj" />
+  <Project Path="ppm-backend/ppm-backend.csproj" />
 </Solution>

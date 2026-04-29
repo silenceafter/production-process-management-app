@@ -1,0 +1,6 @@
+@ppm-backend_HostAddress = http://localhost:5036
+
+GET {{ppm-backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -4,8 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>production_process_management_app.Server</RootNamespace>
-    <SpaRoot>..\production-process-management-app.client</SpaRoot>
+    <RootNamespace>ppm-backend</RootNamespace>
+    <SpaRoot>..\ppm-frontend</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:54555</SpaProxyServerUrl>
   </PropertyGroup>
@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\production-process-management-app.client\production-process-management-app.client.esproj">
+    <ProjectReference Include="..\ppm-frontend\ppm-frontend.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>

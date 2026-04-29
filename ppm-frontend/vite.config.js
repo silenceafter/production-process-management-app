@@ -12,7 +12,7 @@ const baseFolder =
         ? `${env.APPDATA}/ASP.NET/https`
         : `${env.HOME}/.aspnet/https`;
 
-const certificateName = "production-process-management-app.client";
+const certificateName = "ppm-frontend";
 const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
 const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
 
