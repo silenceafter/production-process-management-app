@@ -1,5 +1,9 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace production_process_management_app.Server
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class WeatherForecast
     {
         public DateOnly Date { get; set; }
