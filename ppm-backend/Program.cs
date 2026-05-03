@@ -2,19 +2,26 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using PpmBackend.Data;
+using PpmBackend.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddIdentityApiEndpoints<IdentityUser>(options =>
+
+// Identity
+builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
 {
     options.Password.RequireDigit = true;
-    options.Password.RequiredLength = 3;
+    options.Password.RequiredLength = 6;
+    options.SignIn.RequireConfirmedEmail = false;
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
-//
+
+// Контроллеры
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -49,7 +56,7 @@ if (app.Environment.IsDevelopment())
 //
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapIdentityApi<IdentityUser>();
+app.MapIdentityApi<ApplicationUser>();
 app.MapControllers();
 app.MapFallbackToFile("/index.html");
 app.Run();
