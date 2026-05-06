@@ -33,13 +33,13 @@ namespace PpmBackend.Data
             base.OnModelCreating(builder);
 
             // 🔐 Identity
-            builder.Entity<ApplicationUser>().ToTable("Users", "identity");
-            builder.Entity<IdentityRole>().ToTable("Roles", "identity");
-            builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", "identity");
-            builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims", "identity");
-            builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins", "identity");
-            builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims", "identity");
-            builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens", "identity");
+            builder.Entity<ApplicationUser>().ToTable("AspNetUsers", "identity");
+            builder.Entity<IdentityRole>().ToTable("AspNetRoles", "identity");
+            builder.Entity<IdentityUserRole<string>>().ToTable("AspNetUserRoles", "identity");
+            builder.Entity<IdentityUserClaim<string>>().ToTable("AspNetUserClaims", "identity");
+            builder.Entity<IdentityUserLogin<string>>().ToTable("AspNetUserLogins", "identity");
+            builder.Entity<IdentityRoleClaim<string>>().ToTable("AspNetRoleClaims", "identity");
+            builder.Entity<IdentityUserToken<string>>().ToTable("AspNetUserTokens", "identity");
 
             // 📐 Engineering: справочники + техподготовка
             builder.Entity<Job>().ToTable("jobs", "engineering");

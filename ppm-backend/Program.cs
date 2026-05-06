@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using PpmBackend.Data;
 using PpmBackend.Models;
+using PpmBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,9 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<WorkOrderService>();
+builder.Services.AddScoped<PertCalculator>();
 
 // Контроллеры
 builder.Services.AddControllers();

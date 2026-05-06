@@ -32,7 +32,12 @@ namespace PpmBackend.Models.Dictionaries
         [MaxLength(200)] public string? WorkingConditions { get; set; }
         public int NumberOfWorkers { get; set; } = 1;
         public int NumberOfProcessedParts { get; set; } = 1;
-        public decimal LaborEffort { get; set; } = 0;
+
+        // Нормы времени (минуты) — для PERT/планирования
+        [Range(0, double.MaxValue)] public decimal SetupMinutes { get; set; } = 0;          // наладка
+        [Range(0.01, double.MaxValue)] public decimal UnitMinutesPerPiece { get; set; } = 0; // на 1 деталь
+
+        // public decimal LaborEffort { get; set; } = 0;
 
         // PERT-оценки (опционально)
         public decimal? OptimisticMinutes { get; set; }
