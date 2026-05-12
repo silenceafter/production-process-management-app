@@ -4,15 +4,17 @@ using Microsoft.OpenApi;
 using PpmBackend.Data;
 using PpmBackend.Models;
 using PpmBackend.Services;
+using PpmBackend.Services.Planning;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+        .UseSnakeCaseNamingConvention());
 
 // Identity
-builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
+/*builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
@@ -20,10 +22,11 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
+.AddDefaultTokenProviders();*/
 
-builder.Services.AddScoped<WorkOrderService>();
-builder.Services.AddScoped<PertCalculator>();
+/*builder.Services.AddScoped<WorkOrderService>();
+builder.Services.AddScoped<PertCalculator>();*/
+//builder.Services.AddScoped<IWorkOrderService, WorkOrderService>();
 
 // Контроллеры
 builder.Services.AddControllers();
@@ -58,9 +61,9 @@ if (app.Environment.IsDevelopment())
     });
 }
 //
-app.UseAuthentication();
+/*app.UseAuthentication();
 app.UseAuthorization();
-app.MapIdentityApi<ApplicationUser>();
+app.MapIdentityApi<ApplicationUser>();*/
 app.MapControllers();
 app.MapFallbackToFile("/index.html");
 app.Run();

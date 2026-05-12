@@ -1,95 +1,113 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using PpmBackend.Models;
-using PpmBackend.Models.Dictionaries;
+using PpmBackend.Models.Engineering.Dictionaries;
+using PpmBackend.Models.Engineering.Products;
+using PpmBackend.Models.Engineering.Resources;
+using PpmBackend.Models.Engineering.Technologies;
+using PpmBackend.Models.Identity;
+using PpmBackend.Models.Planning.Orders;
+using PpmBackend.Models.Planning.Scheduling;
+using MeasuringToolType = PpmBackend.Models.Engineering.Dictionaries.MeasuringToolType;
+using ToolingType = PpmBackend.Models.Engineering.Dictionaries.ToolingType;
 
 namespace PpmBackend.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-
-        // Справочники
-        public DbSet<Job> Jobs { get; set; }
-        public DbSet<Equipment> Equipment { get; set; }
-        public DbSet<Tooling> Tooling { get; set; }
-        public DbSet<MeasuringTool> MeasuringTools { get; set; }
-        public DbSet<Material> Materials { get; set; }
-        public DbSet<Component> Components { get; set; }
-
-        // Изделия и маршруты
-        public DbSet<Product> Products { get; set; }
-        public DbSet<BomItem> BomItems { get; set; }
-        public DbSet<Operation> Operations { get; set; }
-
-        // Планирование
-        public DbSet<WorkOrder> WorkOrders { get; set; }
-        public DbSet<OrderOperation> OrderOperations { get; set; }
-        public DbSet<OperationDependency> OperationDependencies { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder builder)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
         {
-            base.OnModelCreating(builder);
-
-            // 🔐 Identity
-            builder.Entity<ApplicationUser>().ToTable("AspNetUsers", "identity");
-            builder.Entity<IdentityRole>().ToTable("AspNetRoles", "identity");
-            builder.Entity<IdentityUserRole<string>>().ToTable("AspNetUserRoles", "identity");
-            builder.Entity<IdentityUserClaim<string>>().ToTable("AspNetUserClaims", "identity");
-            builder.Entity<IdentityUserLogin<string>>().ToTable("AspNetUserLogins", "identity");
-            builder.Entity<IdentityRoleClaim<string>>().ToTable("AspNetRoleClaims", "identity");
-            builder.Entity<IdentityUserToken<string>>().ToTable("AspNetUserTokens", "identity");
-
-            // 📐 Engineering: справочники + техподготовка
-            builder.Entity<Job>().ToTable("jobs", "engineering");
-            builder.Entity<Equipment>().ToTable("equipment", "engineering");
-            builder.Entity<Tooling>().ToTable("tooling", "engineering");
-            builder.Entity<MeasuringTool>().ToTable("measuring_tools", "engineering");
-            builder.Entity<Material>().ToTable("materials", "engineering");
-            builder.Entity<Component>().ToTable("components", "engineering");
-            builder.Entity<Product>().ToTable("products", "engineering");
-            builder.Entity<BomItem>().ToTable("bom_items", "engineering");
-            builder.Entity<Operation>().ToTable("operations", "engineering");
-
-            // 📅 Planning: оперативные данные и PERT
-            builder.Entity<WorkOrder>().ToTable("work_orders", "planning");
-            builder.Entity<OrderOperation>().ToTable("order_operations", "planning");
-            builder.Entity<OperationDependency>().ToTable("operation_dependencies", "planning");
-
-            // 🔗 Связи (cross-schema FK работают штатно)
-            builder.Entity<Operation>()
-                .HasOne(o => o.Equipment).WithMany().HasForeignKey(o => o.EquipmentId)
-                .OnDelete(DeleteBehavior.Restrict);
-            builder.Entity<Operation>()
-                .HasOne(o => o.Job).WithMany().HasForeignKey(o => o.JobId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.Entity<OrderOperation>()
-                .HasOne(o => o.TemplateOperation).WithMany()
-                .HasForeignKey(o => o.OperationId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.Entity<WorkOrder>()
-                .HasOne(w => w.CreatedBy).WithMany().HasForeignKey(w => w.CreatedById)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            builder.Entity<OrderOperation>()
-                .HasOne(o => o.AssignedEquipment).WithMany()
-                .HasForeignKey(o => o.AssignedEquipmentId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            builder.Entity<OperationDependency>()
-                .HasOne(d => d.Predecessor).WithMany(o => o.Successors)
-                .HasForeignKey(d => d.PredecessorId).OnDelete(DeleteBehavior.Restrict);
-            builder.Entity<OperationDependency>()
-                .HasOne(d => d.Successor).WithMany(o => o.Predecessors)
-                .HasForeignKey(d => d.SuccessorId).OnDelete(DeleteBehavior.Restrict);
-
-            // 🔍 Индексы
-            builder.Entity<WorkOrder>().HasIndex(w => w.OrderNumber).IsUnique().HasFilter("order_number IS NOT NULL");
-            builder.Entity<OrderOperation>().HasIndex(o => new { o.AssignedEquipmentId, o.ScheduledStart });
-            builder.Entity<Product>().HasIndex(p => p.DrawingNumber).IsUnique().HasFilter("drawing_number IS NOT NULL");
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // 🔑 Устанавливаем схему по умолчанию
+            modelBuilder.HasDefaultSchema("engineering");        
+
+            // 🔑 Настройка Identity таблиц с правильными именами колонок
+            modelBuilder.Entity<ApplicationUser>(entity =>
+            {
+                entity.ToTable("AspNetUsers", "identity");
+
+                entity.Property(e => e.Id).HasColumnName("Id");
+                entity.Property(e => e.UserName).HasColumnName("UserName").HasMaxLength(256);
+                entity.Property(e => e.NormalizedUserName).HasColumnName("NormalizedUserName").HasMaxLength(256);
+                entity.Property(e => e.Email).HasColumnName("Email").HasMaxLength(256);
+                entity.Property(e => e.NormalizedEmail).HasColumnName("NormalizedEmail").HasMaxLength(256);
+                entity.Property(e => e.EmailConfirmed).HasColumnName("EmailConfirmed");
+                entity.Property(e => e.PasswordHash).HasColumnName("PasswordHash");
+                entity.Property(e => e.SecurityStamp).HasColumnName("SecurityStamp");
+                entity.Property(e => e.ConcurrencyStamp).HasColumnName("ConcurrencyStamp");
+                entity.Property(e => e.PhoneNumber).HasColumnName("PhoneNumber");
+                entity.Property(e => e.PhoneNumberConfirmed).HasColumnName("PhoneNumberConfirmed");
+                entity.Property(e => e.TwoFactorEnabled).HasColumnName("TwoFactorEnabled");
+                entity.Property(e => e.LockoutEnd).HasColumnName("LockoutEnd");
+                entity.Property(e => e.LockoutEnabled).HasColumnName("LockoutEnabled");
+                entity.Property(e => e.AccessFailedCount).HasColumnName("AccessFailedCount");
+
+                // Ваши кастомные поля
+                entity.Property(e => e.FirstName).HasColumnName("FirstName");
+                entity.Property(e => e.LastName).HasColumnName("LastName");
+            });
+
+            modelBuilder.Entity<IdentityRole>(entity =>
+            {
+                entity.ToTable("AspNetRoles", "identity");
+                entity.Property(e => e.Id).HasColumnName("Id");
+                entity.Property(e => e.Name).HasColumnName("Name").HasMaxLength(256);
+                entity.Property(e => e.NormalizedName).HasColumnName("NormalizedName").HasMaxLength(256);
+                entity.Property(e => e.ConcurrencyStamp).HasColumnName("ConcurrencyStamp");
+            });
+
+            // Остальные Identity таблицы
+            modelBuilder.Entity<IdentityUserRole<string>>(e =>
+            {
+                e.ToTable("AspNetUserRoles", "identity");
+                e.Property(e => e.UserId).HasColumnName("UserId");
+                e.Property(e => e.RoleId).HasColumnName("RoleId");
+                e.HasKey(r => new { r.UserId, r.RoleId });
+            });
+
+            modelBuilder.Entity<IdentityUserClaim<string>>(e =>
+            {
+                e.ToTable("AspNetUserClaims", "identity");
+                e.Property(e => e.Id).HasColumnName("Id");
+                e.Property(e => e.UserId).HasColumnName("UserId");
+                e.Property(e => e.ClaimType).HasColumnName("ClaimType");
+                e.Property(e => e.ClaimValue).HasColumnName("ClaimValue");
+            });
+
+            modelBuilder.Entity<IdentityUserLogin<string>>(e =>
+            {
+                e.ToTable("AspNetUserLogins", "identity");
+                e.Property(e => e.LoginProvider).HasColumnName("LoginProvider");
+                e.Property(e => e.ProviderKey).HasColumnName("ProviderKey");
+                e.Property(e => e.ProviderDisplayName).HasColumnName("ProviderDisplayName");
+                e.Property(e => e.UserId).HasColumnName("UserId");
+                e.HasKey(l => new { l.LoginProvider, l.ProviderKey });
+            });
+
+            modelBuilder.Entity<IdentityRoleClaim<string>>(e =>
+            {
+                e.ToTable("AspNetRoleClaims", "identity");
+                e.Property(e => e.Id).HasColumnName("Id");
+                e.Property(e => e.RoleId).HasColumnName("RoleId");
+                e.Property(e => e.ClaimType).HasColumnName("ClaimType");
+                e.Property(e => e.ClaimValue).HasColumnName("ClaimValue");
+            });
+
+            modelBuilder.Entity<IdentityUserToken<string>>(e =>
+            {
+                e.ToTable("AspNetUserTokens", "identity");
+                e.Property(e => e.UserId).HasColumnName("UserId");
+                e.Property(e => e.LoginProvider).HasColumnName("LoginProvider");
+                e.Property(e => e.Name).HasColumnName("Name");
+                e.Property(e => e.Value).HasColumnName("Value");
+                e.HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
+            });
+        }    
     }
 }
