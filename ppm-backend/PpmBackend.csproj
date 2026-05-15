@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ppm-frontend\ppm-frontend.esproj">
+    <ProjectReference Include="..\ppm-frontend\PpmFrontend.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>

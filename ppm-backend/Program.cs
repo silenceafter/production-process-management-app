@@ -1,8 +1,10 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using PpmBackend.Data;
+using PpmBackend.Interfaces;
 using PpmBackend.Models;
+using PpmBackend.Repositories;
 using PpmBackend.Services;
 using PpmBackend.Services.Planning;
 
@@ -24,11 +26,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();*/
 
-/*builder.Services.AddScoped<WorkOrderService>();
-builder.Services.AddScoped<PertCalculator>();*/
-//builder.Services.AddScoped<IWorkOrderService, WorkOrderService>();
+/*builder.Services.AddScoped<IWorkOrderRepository, WorkOrderDapperRepository>();
+builder.Services.AddScoped<IWorkOrderService, WorkOrderService>();*/
 
-// �����������
+// 🔑 Контроллеры
+builder.Services.AddControllers();
+
+// Контроллеры
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -37,7 +41,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "My API",
         Version = "v1",
-        Description = "Описание вашего API",
+        Description = "РћРїРёСЃР°РЅРёРµ РІР°С€РµРіРѕ API",
         Contact = new OpenApiContact
         {
             Name = "Support",

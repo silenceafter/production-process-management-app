@@ -30,25 +30,26 @@ namespace PpmBackend.Models.DTOs
         DateTimeOffset? UpdatedAt
     );
 
-    public record WorkOrderResponseDto(
-        Guid Id,
-        string OrderNumber,
-        Guid ProductId,
-        string ProductName,
-        string ProductDrawingNumber,
-        int Quantity,
-        DateTimeOffset PlannedStart,
-        DateTimeOffset? DueDate,
-        string Status,
-        string? Notes,
-        string? CreatedById,
-        string? CreatedByName,
-        DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt,
-        double CompletionPercent,
-        int TotalOperations,
-        int CompletedOperations
-    );
+    public class WorkOrderResponseDto
+    {
+        public Guid Id { get; set; }
+        public string OrderNumber { get; set; } = "";
+        public Guid ProductId { get; set; }
+        public string ProductName { get; set; } = "";
+        public string ProductDrawingNumber { get; set; } = "";
+        public int Quantity { get; set; }
+        public DateTimeOffset PlannedStart { get; set; }
+        public DateTimeOffset? DueDate { get; set; }
+        public string Status { get; set; } = "";
+        public string? Notes { get; set; }
+        public string? CreatedById { get; set; }
+        public string? CreatedByName { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? UpdatedAt { get; set; }
+        public double CompletionPercent { get; set; }
+        public int TotalOperations { get; set; }
+        public int CompletedOperations { get; set; }
+    }
 
     public record WorkOrderFilterDto(
         // 🔍 Фильтрация

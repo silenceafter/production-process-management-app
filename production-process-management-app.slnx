@@ -1,7 +1,7 @@
 <Solution>
   <Project Path="ppm-backend/PpmBackend.csproj" />
-  <Project Path="ppm-frontend/ppm-frontend.esproj">
-    <Build Solution="Release|*" />
+  <Project Path="ppm-frontend/PpmFrontend.esproj">
+    <Build />
     <Deploy Solution="Release|*" />
   </Project>
 </Solution>

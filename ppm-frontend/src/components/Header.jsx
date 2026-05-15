@@ -1,0 +1,207 @@
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
+import PropTypes from 'prop-types';
+import HelpIcon from '@mui/icons-material/Help';
+import MenuIcon from '@mui/icons-material/Menu';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import { AppBar, Avatar, Button, Grid, IconButton, Link, Toolbar, Tooltip, Typography, Stack, Box } from '@mui/material';
+import { HeaderSearch } from './HeaderSearch';
+import { useSelector, useDispatch } from 'react-redux';
+import { signOut } from '../store/slices/usersSlice';
+import { useLogout } from '../hooks/useLogout';
+import { persistStore } from 'redux-persist';
+import { store } from '../store/store';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Divider from '@mui/material/Divider';
+import PersonAdd from '@mui/icons-material/PersonAdd';
+import Settings from '@mui/icons-material/Settings';
+import Logout from '@mui/icons-material/Logout';
+import { useSafeReset } from '../hooks/useSafeReset';
+
+const lightColor = 'rgba(255, 255, 255, 0.7)';
+
+function stringToColor(string) {
+  let hash = 0;
+  let i;
+
+  /* eslint-disable no-bitwise */
+  for (i = 0; i < string.length; i += 1) {
+    hash = string.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  let color = '#';
+  for (i = 0; i < 3; i += 1) {
+    const value = (hash >> (i * 8)) & 0xff;
+    color += `00${value.toString(16)}`.slice(-2);
+  }
+  /* eslint-enable no-bitwise */
+  return color;
+}
+
+function stringAvatar(name) {
+  return {
+    sx: {
+      bgcolor: stringToColor(name),
+    },
+    children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
+  };
+}
+
+function Header(props) {
+  const { page, onDrawerToggle } = props;
+  const dispatch = useDispatch();
+  const persistor = persistStore(store);
+
+  //стейты
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  //селекторы
+  const user = useSelector((state) => state.users.user);
+  const loading = useSelector((state) => state.users.loading);
+  const error = useSelector((state) => state.users.error);
+
+  //хуки
+  const logout = useLogout();
+  //const { safeResetAndExecute, ConfirmationDialog } = useSafeReset();
+
+  //события
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  /*const handleSearchReset = async () => {
+    await safeResetAndExecute({
+      title: 'Есть несохранённые изменения',
+      message: 'Текущий поиск будет очищен.'
+    });
+  };*/
+
+  const handleUserExitClose = async () => {
+    //Учетная запись -> Выйти
+    dispatch(signOut());
+    logout(); // очистка redux
+    await persistor.purge();
+    setAnchorEl(null);
+  };
+
+  // Аватар
+  const displayName = (!loading && !error && (user?.lastname || user?.firstname)) 
+    ? `${user?.lastname || ''} ${user?.firstname || ''}`.trim() 
+    : 'Неизвестный Пользователь';
+  //
+  return (
+    <>
+      <AppBar color="primary" position="sticky" elevation={0}>
+        <Toolbar>
+          <Grid container spacing={1} sx={{ alignItems: 'center' }}>
+            {/* 1. Кнопка меню */}
+            <Grid item>
+              <IconButton color="inherit" aria-label="open drawer" onClick={onDrawerToggle} edge="start">
+                <MenuIcon />
+              </IconButton>
+            </Grid>
+
+            {/* 2. Название страницы */}
+            <Grid item>
+              <Typography variant="h6" component="div" noWrap sx={{ ml: 1 }}>{page}</Typography>
+            </Grid>
+
+            {/* 3. Распорка (прижимает правую часть) */}
+            <Grid item xs />
+
+            {/* 4. Уведомления */}
+            <Grid item>
+              <Tooltip title="Уведомления • Нет уведомлений">
+                <IconButton color="inherit">
+                  <NotificationsIcon />
+                </IconButton>
+              </Tooltip>
+            </Grid>
+
+            {/* 5. Аватар и меню */}
+            <Grid item>
+              <IconButton onClick={handleClick} color="inherit" sx={{ p: 0.5 }}>
+                <Avatar {...stringAvatar(displayName)} />                
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                id="account-menu"
+                open={open}
+                onClose={handleClose}
+                onClick={handleClose}
+                slotProps={{
+                  paper: {
+                    elevation: 0,
+                    sx: {
+                      overflow: 'visible',
+                      filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                      mt: 1.5,
+                      '& .MuiAvatar-root': {
+                        width: 32,
+                        height: 32,
+                        ml: -0.5,
+                        mr: 1,
+                      },
+                      '&::before': {
+                        content: '""',
+                        display: 'block',
+                        position: 'absolute',
+                        top: 0,
+                        right: 14,
+                        width: 10,
+                        height: 10,
+                        bgcolor: 'background.paper',
+                        transform: 'translateY(-50%) rotate(45deg)',
+                        zIndex: 0,
+                      },
+                    },
+                  },
+                }}
+                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              >
+                <MenuItem onClick={handleClose}>
+                  <Box sx={{ display: 'flex', flexDirection: 'row' }}>                    
+                      <IconButton onClick={handleClick} color="inherit" sx={{ p: 0.5 }}>
+                        <Avatar {...stringAvatar(displayName)} />                
+                      </IconButton> 
+                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography variant='subtitle1' fontWeight='bold'>{user?.lastname} {user?.firstname} {user?.patronimic}</Typography>
+                        <Typography color='text.secondary'>{user?.guild}</Typography>
+                        <Typography sx={{ fontStyle: 'italic'}}>{user?.taskStatusName}</Typography>
+                      </Box>                    
+                  </Box>
+                </MenuItem>
+                <Divider />                
+                <MenuItem onClick={handleClose}>
+                  <ListItemIcon>
+                    <Settings fontSize="small" />
+                  </ListItemIcon>
+                  Настройки
+                </MenuItem>
+                <MenuItem onClick={handleUserExitClose}>
+                  <ListItemIcon>
+                    <Logout fontSize="small" />
+                  </ListItemIcon>
+                  Выйти
+                </MenuItem>
+              </Menu>
+            </Grid>
+          </Grid>
+        </Toolbar>
+      </AppBar>      
+    </>
+  );
+}
+
+Header.propTypes = {
+  onDrawerToggle: PropTypes.func.isRequired,
+};
+
+export {Header};

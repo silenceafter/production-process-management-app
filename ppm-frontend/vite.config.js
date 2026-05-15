@@ -46,16 +46,19 @@ export default defineConfig({
         }
     },
     server: {
+        port: 5173,
         proxy: {
-            '^/weatherforecast': {
-                target,
-                secure: false
-            }
-        },
-        port: parseInt(env.DEV_SERVER_PORT || '54555'),
-        https: {
-            key: fs.readFileSync(keyFilePath),
-            cert: fs.readFileSync(certFilePath),
+        '/api': {
+            target: 'http://localhost:5036',
+            changeOrigin: true,
+            secure: false
+          }
         }
+    },
+    /*port: parseInt(env.DEV_SERVER_PORT || '54555'),
+    https: {
+        key: fs.readFileSync(keyFilePath),
+        cert: fs.readFileSync(certFilePath),
     }
+    },*/
 })
