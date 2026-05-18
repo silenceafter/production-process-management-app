@@ -41,6 +41,7 @@
 
   <ItemGroup>
     <Folder Include="Controllers\Engineering\" />
+    <Folder Include="Controllers\Planning\" />
     <Folder Include="Migrations\" />
     <Folder Include="Services\Engineering\" />
   </ItemGroup>

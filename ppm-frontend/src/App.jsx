@@ -12,6 +12,11 @@ import { Grid, Paper, AppBar, Tabs, Tab, TextField, InputAdornment } from '@mui/
 import SearchIcon from '@mui/icons-material/Search';
 import TreeView from '@mui/lab/TreeView';
 import TreeItem from '@mui/lab/TreeItem';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ru';
+
+// русский язык для всего приложения
+dayjs.locale('ru');
 
 function App() {
   return (

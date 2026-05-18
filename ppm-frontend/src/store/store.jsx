@@ -21,6 +21,12 @@ import dashboardReducer from './slices/dashboardSlice';
 import productsReducer from './slices/technologies/productsSlice';
 import adminReducer from './slices/adminSlice';
 import workOrdersReducer from './slices/planning/workOrdersSlice';
+import { Planning } from '../pages/MainPage/Planning/Planning';
+import productsListReducer from './slices/technologies/lists/productsListSlice';
+
+const planningModule = combineReducers({
+  workOrders: workOrdersReducer,
+});
 
 //корневой редьюсер
 const rootReducer = combineReducers({  
@@ -39,7 +45,8 @@ const rootReducer = combineReducers({
   users: usersReducer, /* храним обязательно */  
   dashboard: dashboardReducer,
   admin: adminReducer,
-  workOrders: workOrdersReducer,
+  productsList: productsListReducer,
+  planning: planningModule,
 });
 
 //конфигурация persist

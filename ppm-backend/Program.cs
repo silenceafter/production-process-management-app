@@ -41,7 +41,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "My API",
         Version = "v1",
-        Description = "РћРїРёСЃР°РЅРёРµ РІР°С€РµРіРѕ API",
+        Description = "API",
         Contact = new OpenApiContact
         {
             Name = "Support",

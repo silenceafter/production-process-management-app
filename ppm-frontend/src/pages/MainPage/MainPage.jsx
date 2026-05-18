@@ -195,25 +195,8 @@ function MainPage({ page }) {
             </Box>
             <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', overflow: 'hidden' }}>
               <Header page={pageRussian} onDrawerToggle={handleDrawerToggle} sx={{ position: 'sticky', top: 0, zIndex: 1100, bgcolor: 'white' }} />
-              <Box component="main" sx={{ flex: 1, py: 2, px: 2, bgcolor: '#eaeff1', overflowY: 'auto' }}>
-                <Box sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
-                  gap: 2,                   
-                  padding: 2,
-                  backgroundColor: 'rgb(234, 239, 241)', /*'rgb(245,245,245)',*/
-                  borderRadius: 1,          
-                  boxShadow: 3,
-                  height: '100%',
-                  /*maxHeight: '100vh',*/
-                  /*height: '46rem',*/
-                  /*overflow: !drawing ? 'auto' : 'hidden',*/
-                }}>
-                  {/*<Technologies setSmartBackdropActive={setSmartBackdropActive} showLoading={showLoading} />
-                  !drawing && <Dashboard />*/}
-                  {content}
-                </Box>                
+              <Box component="main" sx={{ flex: 1, py: 2, px: 2, bgcolor: '#eaeff1', overflowY: 'auto' }}>                
+                  {content}                            
               </Box>
               <Box component="footer" sx={{ paddingLeft: 1, paddingRight: 1, paddingBottom: 1, bgcolor: '#eaeff1' }}>
                 <Copyright />

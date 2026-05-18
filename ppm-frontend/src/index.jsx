@@ -10,26 +10,30 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { PersistGate } from 'redux-persist/integration/react';
 //import { NotificationProvider } from './hooks/useNotification';
 import { SnackbarProvider } from 'notistack';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 const theme = createTheme();
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <SnackbarProvider
-            maxSnack={5}
-            autoHideDuration={5000}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-          >
-            <App />
-          </SnackbarProvider>          
-        </PersistGate>        
-      </Provider>
-    </ThemeProvider>    
+    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
+      <ThemeProvider theme={theme}>
+        <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+            <SnackbarProvider
+              maxSnack={5}
+              autoHideDuration={5000}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+            >
+              <App />
+            </SnackbarProvider>          
+          </PersistGate>        
+        </Provider>
+      </ThemeProvider>
+    </LocalizationProvider>    
   </React.StrictMode>
 );

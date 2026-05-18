@@ -1,107 +1,184 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Stack, FormControl, InputLabel, Select, MenuItem
+  Autocomplete, Dialog, DialogTitle, DialogContent, DialogActions, ListItemText,
+  TextField, Button, Stack, CircularProgress, Alert
 } from '@mui/material';
-//import dayjs from 'dayjs';
+import { DateTimePicker } from '@mui/x-date-pickers';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc); 
 
-export default function CreateOrderModal({ open, onClose, onSave }) {
-  // Локальный стейт формы
+export default function CreateOrderModal({ 
+  open, 
+  onClose, 
+  onSave, 
+  autocompleteItems, 
+  loading,
+  mode = 'create',           
+  initialData = null        
+}) {
   const [formData, setFormData] = useState({
     orderNumber: '',
-    productName: '',
-    productCode: '',
-    quantity: '',
-    /*startDate: dayjs(),
-    deadline: dayjs().add(7, 'day'),*/
-    status: 'Draft'
+    quantity: 1,
+    plannedStart: dayjs(),
+    dueDate: dayjs().add(7, 'day'),
+    product_id: null,
   });
+  
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [error, setError] = useState('');
 
-  const handleChange = (field) => (e) => {
-    setFormData(prev => ({ ...prev, [field]: e.target.value }));
+  useEffect(() => {
+    if (open) {
+      if (mode === 'edit' && initialData) {
+        // Режим редактирования (предзаполняем поля)
+        setFormData({
+          orderNumber: initialData.order_number || '',
+          quantity: initialData.quantity || 1,
+          plannedStart: initialData.planned_start ? dayjs(initialData.planned_start) : dayjs(),
+          dueDate: initialData.due_date ? dayjs(initialData.due_date) : dayjs().add(7, 'day'),
+        });
+
+        // Если есть продукт — выбираем его
+        if (initialData.product_id && autocompleteItems?.length) {
+          const product = autocompleteItems.find(p => p.id === initialData.product_id);
+          if (product) setSelectedProduct(product);
+        }
+      } else {
+        // Режим создания
+        setFormData({
+          orderNumber: '',
+          quantity: 1,
+          plannedStart: dayjs(),
+          dueDate: dayjs().add(7, 'day'),
+        });
+        setSelectedProduct(null);
+      }
+      setError('');
+    }
+  }, [open, mode, initialData, autocompleteItems]);
+
+  const handleReset = () => {
+    setFormData({
+      orderNumber: '',
+      quantity: 1,
+      plannedStart: dayjs(),
+      dueDate: dayjs().add(7, 'day'),
+    });
+    setSelectedProduct(null);
+    setError('');
+    onClose();
   };
 
-  const handleSubmit = () => {
-    // Валидация перед отправкой
-    if (!formData.orderNumber || !formData.productName) return;
-    
-    onSave(formData); // Отправляем данные наверх
-    onClose();        // Закрываем модалку
-    // Сброс формы можно сделать здесь или в useEffect при открытии
+  const handleSubmit = async () => {
+    setError('');
+
+    // Валидация
+    if (!selectedProduct) {
+      setError('Выберите изделие');
+      return;
+    }
+    if (formData.dueDate && formData.plannedStart && !formData.dueDate.isAfter(formData.plannedStart)) {
+      setError('Срок должен быть позже даты начала');
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      productId: selectedProduct?.id,
+      productName: selectedProduct?.name,
+      productCode: selectedProduct?.code,
+      productNumber: selectedProduct?.number,
+      plannedStart: formData.plannedStart ? dayjs(formData.plannedStart).utc().format() : null,
+      dueDate:  formData.dueDate  ? dayjs(formData.dueDate).utc().format()  : null,
+    };
+
+    if (mode === 'edit' && initialData?.id) {
+      payload.id = initialData.id;
+    }
+
+    await onSave(payload);
+    // Не закрываем модалку сразу — родитель сделает это после успешного ответа
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Создать новый заказ</DialogTitle>
-      
-      <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 3 }}>
-        
-        {/* Номер заказа */}
-        <TextField
-          label="Номер заказа"
-          value={formData.orderNumber}
-          onChange={handleChange('orderNumber')}
-          size="small"
-          autoFocus
+    <Dialog open={open} onClose={handleReset} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        {mode === 'edit' ? 'Редактировать заказ' : 'Создать новый заказ'}
+      </DialogTitle>      
+      <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>        
+        {error && <Alert severity="error" sx={{ mb: 1 }}>{error}</Alert>}
+        {/* Изделие (Autocomplete) */}
+        <Autocomplete
+          options={autocompleteItems}
+          getOptionLabel={(opt) => `${opt.code} — ${opt.name} №${opt.number}`}
+          filterOptions={(options, { inputValue }) => {
+            const search = inputValue.toLowerCase();
+            return options.filter(opt =>
+              opt.code?.toLowerCase().includes(search) ||
+              opt.name?.toLowerCase().includes(search)
+            );
+          }}
+          renderInput={(params) => (
+            <TextField {...params} label="Изделие" size="small" fullWidth required />
+          )}
+          renderOption={(props, option) => (
+            <li {...props} key={option.id}>
+              <ListItemText
+                primary={option.code}
+                secondary={`${option.name} №${option.number}`}
+                primaryTypographyProps={{ fontWeight: 600 }}
+              />
+            </li>
+          )}
+          onChange={(e, value) => {
+            setSelectedProduct(value);
+            setError('');
+          }}
+          value={selectedProduct}
+          isOptionEqualToValue={(opt, val) => opt?.id === val?.id}
         />
 
-        {/* Наименование изделия */}
+        {/* Количество */}
         <TextField
-          label="Наименование изделия"
-          value={formData.productName}
-          onChange={handleChange('productName')}
+          label="Количество"
+          type="number"
+          value={formData.quantity}
+          onChange={(e) => setFormData(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
           size="small"
+          inputProps={{ min: 1 }}
         />
-
-        {/* Количество и Код (в одну строку) */}
-        <Stack direction="row" spacing={2}>
-          <TextField
-            label="Код изделия"
-            value={formData.productCode}
-            onChange={handleChange('productCode')}
-            size="small"
-            sx={{ flex: 1 }}
-          />
-          <TextField
-            label="Количество"
-            type="number"
-            value={formData.quantity}
-            onChange={handleChange('quantity')}
-            size="small"
-            sx={{ width: 100 }}
-          />
-        </Stack>
 
         {/* Даты */}
         <Stack direction="row" spacing={2}>
-           {/* Здесь лучше использовать DatePicker из @mui/x-date-pickers, 
-               но для простоты примера оставил TextField type="date" */}
-           {/*<TextField
-             label="План. начало"
-             type="date"
-             size="small"
-             InputLabelProps={{ shrink: true }}
-             value={formData.startDate.format('YYYY-MM-DD')}
-             onChange={(e) => setFormData({...formData, startDate: dayjs(e.target.value)})}
-             sx={{ flex: 1 }}
-           />
-           <TextField
-             label="Выполнить до"
-             type="date"
-             size="small"
-             InputLabelProps={{ shrink: true }}
-             value={formData.deadline.format('YYYY-MM-DD')}
-             onChange={(e) => setFormData({...formData, deadline: dayjs(e.target.value)})}
-             sx={{ flex: 1 }}
-           />*/}
+          <DateTimePicker
+            label="Приступить"
+            value={formData.plannedStart}
+            onChange={(val) => setFormData(prev => ({ ...prev, plannedStart: val || dayjs() }))}
+            format="DD.MM.YYYY HH:mm"
+            minDate={dayjs()}
+            slotProps={{ textField: { size: 'small', fullWidth: true } }}
+          />
+          <DateTimePicker
+            label="Выполнить"
+            value={formData.dueDate}
+            onChange={(val) => setFormData(prev => ({ ...prev, dueDate: val || dayjs() }))}
+            format="DD.MM.YYYY HH:mm"
+            minDate={formData.plannedStart}
+            slotProps={{ textField: { size: 'small', fullWidth: true } }}
+          />
         </Stack>
-
       </DialogContent>
 
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} color="inherit">Отмена</Button>
-        <Button onClick={handleSubmit} variant="contained" color="primary">
-          Создать
+        <Button onClick={handleReset} disabled={loading}>Отмена</Button>
+        <Button 
+          onClick={handleSubmit} 
+          variant="contained" 
+          disabled={loading}
+          startIcon={loading && <CircularProgress size={16} color="inherit" />}
+        >
+          {mode === 'edit' ? 'Сохранить изменения' : 'Создать'}
         </Button>
       </DialogActions>
     </Dialog>
